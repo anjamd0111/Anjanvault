@@ -7,12 +7,12 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'anjan123'; // Railway Variables e change koro!
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'anjan123'; // change this in Railway Variables!
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 const META = path.join(UPLOAD_DIR, 'meta.json');
 const BG_URL = process.env.BG_URL || '';
 const VISITS = path.join(UPLOAD_DIR, 'visits.json');
-const MAX_MB = parseInt(process.env.MAX_MB || '0', 10); // 0 = kono limit nai
+const MAX_MB = parseInt(process.env.MAX_MB || '0', 10); // 0 = no limit
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 let meta = [];
@@ -27,7 +27,7 @@ const save = () => fs.writeFileSync(META, JSON.stringify(meta, null, 2));
 
 const TOKEN = crypto.createHash('sha256').update('vault:' + ADMIN_PASSWORD).digest('hex');
 const isAdmin = (req) => req.cookies && req.cookies.vault === TOKEN;
-const needAdmin = (req, res, next) => (isAdmin(req) ? next() : res.status(401).json({ error: 'Login lagbe' }));
+const needAdmin = (req, res, next) => (isAdmin(req) ? next() : res.status(401).json({ error: 'Login required' }));
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -86,13 +86,29 @@ app.get('/api/config', (req, res) => res.json({
 app.post('/api/settings', needAdmin, (req, res) => {
   const b = req.body || {};
   const bg = String(b.bg || '').trim().slice(0, 1000);
-  if (bg && !/^https?:\/\//i.test(bg)) return res.status(400).json({ error: 'URL http:// ba https:// diye shuru hote hobe' });
+  if (bg && !/^https?:\/\//i.test(bg)) return res.status(400).json({ error: 'URL must start with http:// or https://' });
   const num = (v, lo, hi, d) => { v = Number(v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   const theme = ['neon', 'sunset', 'ocean', 'emerald', 'rose'].includes(b.theme) ? b.theme : 'neon';
   settings = { bg, dim: num(b.dim, 0, 95, 70), blur: num(b.blur, 0, 20, 0), theme };
   fs.writeFileSync(SETTINGS, JSON.stringify(settings));
   res.json({ ok: true });
 });
+
+const geoCache = new Map();
+async function geoLookup(ip) {
+  if (!ip || /^(127\.|10\.|192\.168\.|::1|172\.(1[6-9]|2\d|3[01])\.)/.test(ip)) return '';
+  if (geoCache.has(ip)) return geoCache.get(ip);
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 4000);
+  try {
+    const r = await fetch('https://ipwho.is/' + encodeURIComponent(ip), { signal: ctl.signal });
+    const j = await r.json();
+    if (!j || j.success === false) return '';
+    const loc = [j.city, j.region, j.country].filter(Boolean).join(', ') + (j.connection && j.connection.isp ? ' · ' + j.connection.isp : '');
+    geoCache.set(ip, loc);
+    return loc;
+  } finally { clearTimeout(t); }
+}
 
 app.post('/api/visit', (req, res) => {
   const b = req.body || {};
@@ -109,10 +125,15 @@ app.post('/api/visit', (req, res) => {
     lang: cleanStr(b.lang, 20), tz: cleanStr(b.tz, 40), touch: !!b.touch,
     net: cleanStr(b.net, 10), ram: cleanStr(b.ram, 6), cores: cleanStr(b.cores, 4),
     ref: cleanStr(b.ref, 120),
+    bat: cleanStr(b.bat, 4), chg: b.chg === true || b.chg === 'true' ? 'yes' : b.chg === false || b.chg === 'false' ? 'no' : '',
+    loc: '',
   });
   if (visits.length > 5000) visits.length = 5000;
   saveVisits();
   res.json({ ok: true });
+  // approximate location from IP (city / region / country + ISP)
+  const rec = visits[0];
+  geoLookup(rec.ip).then((loc) => { if (loc) { rec.loc = loc; saveVisits(); } }).catch(() => {});
 });
 
 app.get('/api/count', (req, res) => res.json({ total: visits.length, unique: new Set(visits.map((v) => v.vid)).size }));
@@ -140,7 +161,7 @@ app.delete('/api/visits', needAdmin, (req, res) => { visits = []; saveVisits(); 
 
 // Admin
 app.post('/api/login', (req, res) => {
-  if (req.body.password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Vul password' });
+  if (req.body.password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Wrong password' });
   res.cookie('vault', TOKEN, { httpOnly: true, sameSite: 'lax', maxAge: 30 * 24 * 3600 * 1000 });
   res.json({ ok: true });
 });
@@ -170,7 +191,7 @@ app.delete('/api/file/:id', needAdmin, (req, res) => {
 });
 
 const server = app.listen(PORT, () => console.log('Anjan Digital Vault running on port ' + PORT));
-// boro file er jonno timeout bondho (Node default 5 min por upload kete dey)
+// disable timeout for large files (Node's default cuts uploads after 5 min)
 server.requestTimeout = 0;
 server.headersTimeout = 65000;
 server.timeout = 0;
