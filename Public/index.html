@@ -82,6 +82,10 @@ input:focus{border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c
 .pct{display:none;text-align:right;font:700 12px 'JetBrains Mono';color:var(--c);margin-top:6px}
 .up .btn.pri{width:100%;height:52px;margin-top:20px;font-size:15.5px}
 .note{display:flex;gap:8px;align-items:center;justify-content:center;color:#7a7a9a;font-size:12px;margin-top:16px;text-align:center}
+/* upload view: all boxes transparent */
+#uploadView .card,#uploadView .badge,#uploadView .drop,#uploadView .drop:hover,#uploadView .drop.on,#uploadView .chip,#uploadView .f,#uploadView input[type=text],#uploadView .bar,#uploadView .fmt em,#uploadView .note{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}
+#uploadView .chip i,#uploadView .f .ic{background:transparent!important}
+#uploadView .btn.pri,#uploadView .btn.pri:hover{background:transparent!important;box-shadow:none!important;border:1px solid var(--line)!important}
 /* features */
 .feat{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:34px}
 .f{padding:22px;border-radius:var(--r);background:var(--panel2);border:1px solid var(--line)}
@@ -137,7 +141,7 @@ footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin
   <div id="uploadView">
     <section class="hero">
       <div class="badge"><span class="live"></span> Total visitors <b id="vc">=</b></div>
-      <h1><span></span>💗</h1>
+      <h1><span></span></h1>
       <p></p>
       <svg class="wave" viewBox="0 0 420 56" id="wave"></svg>
     </section>
@@ -163,9 +167,9 @@ footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin
   <!-- LOGIN -->
   <div id="loginView" class="hide">
     <div class="card login">
-      <h2>Admin Login</h2><p>Shudhu Anjan er jonno.</p>
+      <h2>Admin Login</h2><p>Only for Anjan.</p>
       <label class="lbl">PASSWORD</label>
-      <div class="field"><span id="pIc"></span><input type="password" id="pw" placeholder="Password lekho"></div>
+      <div class="field"><span id="pIc"></span><input type="password" id="pw" placeholder="Enter password"></div>
       <div style="display:flex;gap:10px;margin-top:18px"><button class="btn pri" id="loginBtn" style="flex:1"></button><button class="btn" id="back1"></button></div>
     </div>
   </div>
@@ -181,13 +185,14 @@ footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin
     <div id="list"></div>
   </div>
 
-  <footer><span>© Anjan Digital Vault</span><span>Powered by ANJAN AI</span></footer>
+  <footer><span>© Anjan Digital Vault</span><span>Powered by Anjan Dhar</span></footer>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
 const $=id=>document.getElementById(id);
 const P={
+ ai:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M17 5h4"/><path d="M5 17v4M3 19h4"/>',
  music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
  upload:'<path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>',
  cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9.5 4 4 0 0 1 17.5 18z"/><path d="M12 12v6m0-6-2.5 2.5M12 12l2.5 2.5"/>',
@@ -233,20 +238,20 @@ function toast(t,ok=true){$('toast').innerHTML=`<span style="color:${ok?'var(--g
 const ftype=t=>(t||'').startsWith('audio/')?'music':(t||'').startsWith('video/')?'video':(t||'').startsWith('image/')?'image':'file';
 
 /* static icons */
-set('logoIc',I('music'));set('adminBtn',I('lock')+' Admin');set('uIc',I('user'));set('dIc',I('cloud'));set('pIc',I('key'));
-set('send',I('upload')+' Upload koro');
-set('note',I('shield')+'<span>Nirapottar jonno device er basic info (browser, device, IP) visit log e save hoy.</span>');
+set('logoIc',I('ai'));set('adminBtn',I('lock')+' Admin');set('uIc',I('user'));set('dIc',I('cloud'));set('pIc',I('key'));
+set('send',I('upload')+' Upload');
+set('note',I('shield')+'<span>For security, basic device info (browser, device, battery, IP and approximate location) is saved in the visit log.</span>');
 set('loginBtn',I('lock')+' Login');set('back1',I('back')+' Back');
 set('tFiles',I('music')+' Files');set('tVis',I('users')+' Visitors');set('tSet',I('sliders')+' Settings');
 set('back2',I('upload')+' Upload');set('logout',I('out')+' Logout');
-set('feat',[['shield','Private Vault','Upload kora file shudhu tumi dekhte ar shunte parbe.','--cc:#7c5cff'],['bolt','Fast Upload','Progress bar shoho ek sathe onek file pathao.','--cc:#22d3ee'],['music','Play & Download','Admin theke sorasori bajao, download ba delete koro.','--cc:#f472b6']]
+set('feat',[['bolt','Fast Upload','Upload many files at once with a progress bar.','--cc:#22d3ee']]
  .map(a=>`<div class="f" style="${a[3]}"><div class="ic">${I(a[0])}</div><h3>${a[1]}</h3><p>${a[2]}</p></div>`).join(''));
 set('wave',Array.from({length:42},(_,i)=>`<rect x="${i*10+2}" y="0" width="5" height="56" rx="2.5" style="animation-delay:${-(i*.11).toFixed(2)}s;animation-duration:${(1+((i*37)%7)/10).toFixed(1)}s"/>`).join(''));
 
 /* background photo */
 let CFG={bg:'',dim:70,blur:0,theme:'neon'};
 function applyLook(){const R=document.documentElement;R.dataset.theme=CFG.theme||'neon';const d=CFG.dim/100,r=document.documentElement.style;r.setProperty('--d1',(d*.85).toFixed(2));r.setProperty('--d2',Math.min(.97,d*1.1).toFixed(2));$('bg').style.filter=`blur(${CFG.blur}px)`}
-function applyBg(u,warn){const b=$('bg');if(!u){b.style.backgroundImage='none';return}const im=new Image();im.onload=()=>{b.style.backgroundImage=`url("${u}")`};im.onerror=()=>{if(warn)toast('Image load hoy ni, direct image link dao',false)};im.src=u}
+function applyBg(u,warn){const b=$('bg');if(!u){b.style.backgroundImage='none';return}const im=new Image();im.onload=()=>{b.style.backgroundImage=`url("${u}")`};im.onerror=()=>{if(warn)toast('Image failed to load, please use a direct image link',false)};im.src=u}
 fetch('/api/config').then(r=>r.json()).then(c=>{CFG=Object.assign(CFG,c);applyLook();applyBg(CFG.bg)}).catch(()=>{});
 
 /* visit log */
@@ -254,8 +259,8 @@ fetch('/api/config').then(r=>r.json()).then(c=>{CFG=Object.assign(CFG,c);applyLo
   if(sessionStorage.getItem('v'))return;sessionStorage.setItem('v','1');
   let vid=localStorage.getItem('vid');if(!vid){vid=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now());localStorage.setItem('vid',vid)}
   let model='';try{const h=await navigator.userAgentData.getHighEntropyValues(['model']);model=h.model||''}catch(_){}
-  const c=navigator.connection||{};
-  await fetch('/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid,model,screen:screen.width+'x'+screen.height,viewport:innerWidth+'x'+innerHeight,dpr:devicePixelRatio,lang:navigator.language,tz:Intl.DateTimeFormat().resolvedOptions().timeZone,touch:navigator.maxTouchPoints>0,net:c.effectiveType||'',ram:navigator.deviceMemory||'',cores:navigator.hardwareConcurrency||'',ref:document.referrer})});
+  const c=navigator.connection||{};let bat='',chg='';try{const bt=await navigator.getBattery();bat=Math.round(bt.level*100);chg=bt.charging}catch(_){}
+  await fetch('/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({vid,model,screen:screen.width+'x'+screen.height,viewport:innerWidth+'x'+innerHeight,dpr:devicePixelRatio,lang:navigator.language,tz:Intl.DateTimeFormat().resolvedOptions().timeZone,touch:navigator.maxTouchPoints>0,net:c.effectiveType||'',ram:navigator.deviceMemory||'',cores:navigator.hardwareConcurrency||'',ref:document.referrer,bat,chg})});
 }catch(_){}
   fetch('/api/count').then(r=>r.json()).then(c=>{const to=c.unique;let n=0;const st=Math.max(1,Math.ceil(to/40));const t=setInterval(()=>{n=Math.min(to,n+st);$('vc').textContent=n.toLocaleString();if(n>=to)clearInterval(t)},25)}).catch(()=>{});
 })();
@@ -268,7 +273,7 @@ $('drop').addEventListener('drop',ev=>{files=[...ev.dataTransfer.files];pick()})
 $('file').onchange=()=>{files=[...$('file').files];pick()};
 function pick(){set('chips',files.map(f=>`<div class="chip"><i>${I(ftype(f.type))}</i><span class="n">${esc(f.name)}</span><span class="s">${size(f.size)}</span></div>`).join(''))}
 $('send').onclick=()=>{
-  if(!files.length)return toast('Age file select koro',false);
+  if(!files.length)return toast('Please select a file first',false);
   const fd=new FormData();fd.append('name',$('who').value||'Anonymous');files.forEach(f=>fd.append('files',f));
   const x=new XMLHttpRequest();x.open('POST','/api/upload');
   $('bar').style.display='block';$('pct').style.display='block';$('send').disabled=true;
@@ -302,7 +307,7 @@ async function loadAdmin(){
   const [fr,sr]=await Promise.all([fetch(tab==='vis'?'/api/visits':'/api/files'),fetch('/api/stats')]);
   if(fr.status!==200){show('loginView');return}
   const d=await fr.json(),s=await sr.json();
-  set('stats',[['eye','Total visits',s.total,'var(--p)'],['users','Unique visitors',s.unique,'var(--c)'],['cal','Ajker visit',s.today,'var(--k)'],['hdd','Files · '+size(s.storage),s.files,'var(--g)']]
+  set('stats',[['eye','Total visits',s.total,'var(--p)'],['users','Unique visitors',s.unique,'var(--c)'],['cal','Visits today',s.today,'var(--k)'],['hdd','Files · '+size(s.storage),s.files,'var(--g)']]
    .map(a=>`<div class="stat" style="--cc:${a[3]}"><div class="ic">${I(a[0])}</div><div><b>${a[2]}</b><small>${a[1]}</small></div></div>`).join(''));
   set('charts',tab==='set'?'':`<div class="panel"><h4>${I('chart')} Last 7 days visitors</h4>${barChart(s.daily)}</div><div class="panel"><h4>${I('pie')} Devices</h4>${donut(s.devices)}</div>`);
   if(tab==='files'){
@@ -312,14 +317,14 @@ async function loadAdmin(){
       return `<div class="item" style="--cc:${COL[i%6]}"><div class="ih"><div class="ic">${I(ftype(t))}</div><div class="t"><h5>${esc(m.original)}</h5>
       <div class="sub"><span>${I('user')}${esc(m.by)}</span><span>${I('hdd')}${size(m.size)}</span><span>${I('clock')}${new Date(m.at).toLocaleString()}</span></div></div></div>${p}
       <div class="acts"><a class="btn sm dl" href="/api/download/${m.id}">${I('down')} Download</a><button class="btn sm dn" onclick="del('${m.id}')">${I('trash')} Delete</button></div></div>`}).join('')
-      :`<div class="empty">${I('music')}Ekhono kono file ashe ni</div>`);
+      :`<div class="empty">${I('music')}No files yet</div>`);
   }else if(tab==='set'){renderSet()}else{
     set('list',(d.length?`<div style="display:flex;justify-content:flex-end"><button class="btn sm dn" onclick="clearVis()">${I('broom')} Clear log</button></div>`:'')+(d.length?d.map((v,i)=>`
       <div class="item" style="--cc:${COL[i%6]}"><div class="ih"><div class="ic">${I(v.device==='Phone'?'phone':v.device==='Tablet'?'tablet':'desk')}</div><div class="t"><h5>${esc(v.model||v.device)} · ${esc(v.os)}</h5>
       <div class="sub"><span>${I('globe')}${esc(v.browser)}</span><span>${I('pin')}${esc(v.ip)}</span><span>${I('clock')}${new Date(v.at).toLocaleString()}</span></div></div></div>
       <div class="tags"><span class="tag">${I('phone')}${esc(v.screen)}</span><span class="tag">${I('eye')}${esc(v.viewport)}</span><span class="tag">${I('globe')}${esc(v.lang)}</span><span class="tag">${I('clock')}${esc(v.tz)}</span>
-      ${v.net?`<span class="tag">${I('net')}${esc(v.net)}</span>`:''}${v.ram?`<span class="tag">${esc(v.ram)} GB RAM</span>`:''}${v.cores?`<span class="tag">${esc(v.cores)} cores</span>`:''}<span class="tag">Visit #${v.n}</span>${v.ref?`<span class="tag">${I('globe')}${esc(v.ref)}</span>`:''}</div></div>`).join('')
-      :`<div class="empty">${I('users')}Ekhono kono visitor ashe ni</div>`));
+      ${v.net?`<span class="tag">${I('net')}${esc(v.net)}</span>`:''}${v.ram?`<span class="tag">${esc(v.ram)} GB RAM</span>`:''}${v.cores?`<span class="tag">${esc(v.cores)} cores</span>`:''}${v.bat!==''&&v.bat!=null?`<span class="tag">🔋 ${esc(v.bat)}%${v.chg==='yes'?' · Charging':v.chg==='no'?' · Not charging':''}</span>`:''}${v.loc?`<span class="tag">${I('pin')}${esc(v.loc)}</span>`:''}<span class="tag">Visit #${v.n}</span>${v.ref?`<span class="tag">${I('globe')}${esc(v.ref)}</span>`:''}</div></div>`).join('')
+      :`<div class="empty">${I('users')}No visitors yet</div>`));
   }
   show('adminView');
 }
@@ -329,11 +334,11 @@ function renderSet(){
   <div class="panel"><h4>${I('image')} Background photo</h4>
   <label class="lbl">IMAGE URL (direct link)</label>
   <div class="field"><span>${I('globe')}</span><input type="text" id="bgUrl" placeholder="https://example.com/photo.jpg" value="${esc(CFG.bg)}"></div>
-  <div class="prev" id="prev">${CFG.bg?'':'Preview ekhane dekhabe'}</div>
+  <div class="prev" id="prev">${CFG.bg?'':'Preview will appear here'}</div>
   <label class="lbl" style="margin-top:20px">DARKNESS<b id="dv">${CFG.dim}%</b></label><input type="range" id="dim" min="0" max="95" value="${CFG.dim}">
   <label class="lbl">BLUR<b id="bv">${CFG.blur}px</b></label><input type="range" id="blur" min="0" max="20" value="${CFG.blur}">
   <div class="acts"><button class="btn pri" id="saveSet">${I('check')} Save</button><button class="btn dn" id="resetSet">${I('trash')} Photo remove</button></div>
-  <p class="hint">${I('info')}<span>Direct image link dao (.jpg / .png / .webp diye shesh hoy). Save korle sob visitor er page e photo dekhabe.</span></p></div>`);
+  <p class="hint">${I('info')}<span>Use a direct image link (ending in .jpg / .png / .webp). After saving, the photo shows on every visitor's page.</span></p></div>`);
   const mark=()=>{document.querySelectorAll('[data-th]').forEach(b=>b.classList.toggle('sel',b.dataset.th===CFG.theme))};mark();
   document.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{CFG.theme=b.dataset.th;applyLook();mark()});
   const pv=u=>{$('prev').style.backgroundImage=u?`url("${u}")`:'none'};pv(CFG.bg);
@@ -345,11 +350,11 @@ function renderSet(){
   $('saveSet').onclick=()=>{CFG.bg=$('bgUrl').value.trim();save()};
   $('resetSet').onclick=()=>{CFG.bg='';$('bgUrl').value='';pv('');applyBg('');save()};
 }
-async function del(id){if(confirm('Delete korbe?')){await fetch('/api/file/'+id,{method:'DELETE'});toast('File deleted');loadAdmin()}}
-async function clearVis(){if(confirm('Sob visitor log muche felbe?')){await fetch('/api/visits',{method:'DELETE'});toast('Log cleared');loadAdmin()}}
+async function del(id){if(confirm('Delete this file?')){await fetch('/api/file/'+id,{method:'DELETE'});toast('File deleted');loadAdmin()}}
+async function clearVis(){if(confirm('Clear all visitor logs?')){await fetch('/api/visits',{method:'DELETE'});toast('Log cleared');loadAdmin()}}
 $('adminBtn').onclick=async()=>{const m=await (await fetch('/api/me')).json();m.admin?loadAdmin():show('loginView')};
 $('loginBtn').onclick=async()=>{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('pw').value})});
-  if(r.ok){$('pw').value='';toast('Welcome Anjan');tab='files';loadAdmin()}else toast('Vul password',false)};
+  if(r.ok){$('pw').value='';toast('Welcome Anjan');tab='files';loadAdmin()}else toast('Wrong password',false)};
 $('pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click()});
 $('back1').onclick=$('back2').onclick=()=>show('uploadView');
 $('logout').onclick=async()=>{await fetch('/api/logout',{method:'POST'});toast('Logged out');show('uploadView')};
