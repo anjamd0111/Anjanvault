@@ -41,7 +41,7 @@ const app = express();
 app.set('trust proxy', true);
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'Public')));
 
 // Public: anyone can upload
 app.post('/api/upload', (req, res) => {
